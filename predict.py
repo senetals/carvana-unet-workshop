@@ -1,6 +1,7 @@
 # predict.py — RANDOM IMAGE INFERENCE + VISUALIZATION (OPTIMIZED)
 
 import os
+import gdown
 import random
 import torch
 import torch.nn as nn
@@ -58,26 +59,34 @@ class UNet(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-MODEL_PATH_FULL = "unet_full_5epochs copy.pth"
-MODEL_PATH_SMALL = "unet_small_final.pth"
+FULL_MODEL_PATH = "unet_full_5epochs copy.pth"
+SMALL_MODEL_PATH = "unet_small_final.pth"
+
+# Google Drive file ID for the FULL pretrained model
+GDRIVE_FILE_ID = "1ysv8UY23dxkIj6YKPzVWnfxqPtSOV5_s"
+
+if not os.path.exists(FULL_MODEL_PATH):
+    print("Full pretrained model not found.")
+    print("Downloading from Google Drive...")
+
+    url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
+    gdown.download(url, FULL_MODEL_PATH, quiet=False)
+
+    print("Download complete.")
+
+# Decide which model to load
+if os.path.exists(FULL_MODEL_PATH):
+    print("Using FULL pretrained model")
+    model_path = FULL_MODEL_PATH
+else:
+    print("Using SMALL workshop-trained model")
+    model_path = SMALL_MODEL_PATH
 
 model = UNet().to(device)
 
-if os.path.exists(MODEL_PATH_FULL):
-    print("Loading full pretrained model...")
-    state_dict = torch.load(MODEL_PATH_FULL, map_location=device)
-elif os.path.exists(MODEL_PATH_SMALL):
-    print("Full model not found. Loading small model instead...")
-    state_dict = torch.load(MODEL_PATH_SMALL, map_location=device)
-else:
-    raise FileNotFoundError(
-        "No pretrained model found. "
-        "Please train the model or add a .pth file."
-    )
-
+state_dict = torch.load(model_path, map_location=device)
 model.load_state_dict(state_dict)
 model.eval()
-
 
 print("Model loaded successfully.")
 
