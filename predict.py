@@ -1,6 +1,7 @@
 # predict.py — RANDOM IMAGE INFERENCE + VISUALIZATION (OPTIMIZED)
 
 import os
+import argparse
 import gdown
 import random
 import torch
@@ -54,7 +55,23 @@ class UNet(nn.Module):
         u3 = self.u3(u2); u3 = torch.cat([u3, d2], 1); u3 = self.c3(u3)
         u4 = self.u4(u3); u4 = torch.cat([u4, d1], 1); u4 = self.c4(u4)
         return self.out(u4)
+# ============================================================
+# COMMAND-LINE ARGUMENTS
+#
+# --full : Use FULL pretrained model (downloads if needed)
+#
+# Default behavior:
+# - Uses SMALL model trained during workshop
+# ============================================================
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--full",
+    action="store_true",
+    help="Use full pretrained U-Net model (downloads if not present)"
+)
+
+args = parser.parse_args()
 # ====================== DEVICE & MODEL ======================
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -62,24 +79,24 @@ print(f"Using device: {device}")
 FULL_MODEL_PATH = "unet_full_5epochs copy.pth"
 SMALL_MODEL_PATH = "unet_small_final.pth"
 
-# Google Drive file ID for the FULL pretrained model
+# Google Drive file ID for FULL model
 GDRIVE_FILE_ID = "1ysv8UY23dxkIj6YKPzVWnfxqPtSOV5_s"
 
-if not os.path.exists(FULL_MODEL_PATH):
-    print("Full pretrained model not found.")
-    print("Downloading from Google Drive...")
+if args.full:
+    print("FULL model requested.")
 
-    url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
-    gdown.download(url, FULL_MODEL_PATH, quiet=False)
+    if not os.path.exists(FULL_MODEL_PATH):
+        print("Full model not found locally.")
+        print("Downloading full pretrained model from Google Drive...")
 
-    print("Download complete.")
+        url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
+        gdown.download(url, FULL_MODEL_PATH, quiet=False)
 
-# Decide which model to load
-if os.path.exists(FULL_MODEL_PATH):
-    print("Using FULL pretrained model")
+        print("Download complete.")
+
     model_path = FULL_MODEL_PATH
 else:
-    print("Using SMALL workshop-trained model")
+    print("Using SMALL workshop-trained model.")
     model_path = SMALL_MODEL_PATH
 
 model = UNet().to(device)
@@ -87,6 +104,7 @@ model = UNet().to(device)
 state_dict = torch.load(model_path, map_location=device)
 model.load_state_dict(state_dict)
 model.eval()
+
 
 print("Model loaded successfully.")
 
