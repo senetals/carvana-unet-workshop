@@ -59,15 +59,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 model = UNet().to(device)
-state_dict = torch.load("unet_full_5epochs copy.pth", map_location=device)
+state_dict = torch.load("unet_small_final.pth", map_location=device)
 model.load_state_dict(state_dict)
 model.eval()
 
 print("Model loaded successfully.")
 
 # ====================== RANDOM IMAGE SELECTION ======================
-IMG_DIR = "carvana/raw/train"
-MASK_DIR = "carvana/raw/train_masks"
+IMG_DIR = "carvana_small/train/images"
+MASK_DIR = "carvana_small/train/masks"
 
 img_files = sorted([f for f in os.listdir(IMG_DIR) if f.endswith(".jpg")])
 assert len(img_files) > 0, "No images found in carvana/raw/train"
