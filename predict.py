@@ -58,10 +58,26 @@ class UNet(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
+MODEL_PATH_FULL = "unet_full_5epochs copy.pth"
+MODEL_PATH_SMALL = "unet_small_final.pth"
+
 model = UNet().to(device)
-state_dict = torch.load("unet_small_final.pth", map_location=device)
+
+if os.path.exists(MODEL_PATH_FULL):
+    print("Loading full pretrained model...")
+    state_dict = torch.load(MODEL_PATH_FULL, map_location=device)
+elif os.path.exists(MODEL_PATH_SMALL):
+    print("Full model not found. Loading small model instead...")
+    state_dict = torch.load(MODEL_PATH_SMALL, map_location=device)
+else:
+    raise FileNotFoundError(
+        "No pretrained model found. "
+        "Please train the model or add a .pth file."
+    )
+
 model.load_state_dict(state_dict)
 model.eval()
+
 
 print("Model loaded successfully.")
 
