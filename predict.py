@@ -185,7 +185,8 @@ plt.axis("off")
 plt.tight_layout()
 
 # ====================== SAVE OUTPUT ======================
-out_name = f"prediction_{img_name.replace('.jpg','')}.png"
+model_tag = "full" if args.full else "small"
+out_name = f"prediction_{model_tag}_{img_name.replace('.jpg','')}.png"
 plt.savefig(out_name, dpi=200, bbox_inches="tight")
 plt.show()
 
